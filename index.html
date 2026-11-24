@@ -123,7 +123,7 @@
   <div class="sec"><h3>趣味彩蛋</h3><p id="rEgg"></p></div>
   <div class="r-actions">
     <button id="againBtn">再测一次</button>
-    <button id="saveTip">截图分享</button>
+    <button id="saveTip">分享结果</button>
   </div>
   <p class="foot">趣味人格测试，非历史考试，非专业心理诊断。<br>把结果发给朋友，看看谁是另一型。</p>
 </section>
@@ -197,9 +197,18 @@ function showResult(){
 }
 
 $("againBtn").onclick=()=>{score={};idx=0;renderQ();show("quiz");};
-$("saveTip").onclick=()=>{
-  const t=$("saveTip");t.textContent="已截图？去分享吧 →"; 
-  setTimeout(()=>t.textContent="截图分享",1800);
+$("saveTip").onclick=async()=>{
+  const r=window.ARCH.find(a=>a.name===$("rName").textContent);
+  const shareData={title:"测测你的灵魂对应哪位中国历史人物",text:r?`${r.name}：${r.line}`:"来测测你的历史人物灵魂类型",url:location.href};
+  const b=$("saveTip");
+  if(navigator.share){
+    try{await navigator.share(shareData);b.textContent="分享成功";}
+    catch(e){if(e.name!=="AbortError")b.textContent="分享失败，请重试";}
+  }else{
+    try{await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);b.textContent="结果和链接已复制";}
+    catch(e){b.textContent="请截图保存结果";}
+  }
+  setTimeout(()=>b.textContent="分享结果",2200);
 };
 </script>
 </body>
