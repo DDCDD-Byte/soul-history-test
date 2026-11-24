@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:,">
+<title>测测你的灵魂对应哪位中国历史人物</title>
+<style>
+  :root{
+    --bg-top:#fdfbf6; --bg-bottom:#f7f1e7; --accent:#d21015;
+    --ink:#2b282c; --gray:#8d837c; --dim:#bfb1a7;
+    --card:rgba(210,16,21,.045);
+    --pink:rgba(216,100,99,.85);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(180deg,var(--bg-top),var(--bg-bottom));
+    color:var(--ink); min-height:100dvh;
+    display:flex; justify-content:center;
+  }
+  .page{width:100%;max-width:480px;padding:0 24px 48px;display:none;flex-direction:column}
+  .page.active{display:flex;animation:fadein .45s ease}
+  @keyframes fadein{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes slidein{from{opacity:0;transform:translateX(32px)}to{opacity:1;transform:none}}
+  .slidein{animation:slidein .35s ease}
+
+  /* ---------- 首页 ---------- */
+  #home{justify-content:center;min-height:100dvh;padding-top:0;padding-bottom:0}
+  .badge{display:inline-flex;align-items:center;gap:8px;color:var(--accent);
+    font-size:14px;letter-spacing:4px;margin-bottom:28px}
+  .badge::before{content:"";width:22px;height:2px;background:var(--accent)}
+  h1{font-size:34px;line-height:1.45;font-weight:700;margin-bottom:20px;color:var(--ink)}
+  h1 em{font-style:normal;color:var(--accent)}
+  .sub{color:var(--gray);font-size:15px;line-height:1.9;margin-bottom:44px}
+  .meta{display:flex;gap:22px;color:var(--dim);font-size:13px;margin-bottom:36px}
+  .meta b{color:var(--gray);font-weight:600}
+  #startBtn{
+    display:block;width:100%;padding:17px;border:none;border-radius:14px;
+    background:var(--accent);color:#fdfbf6;font-size:17px;font-weight:700;
+    letter-spacing:2px;cursor:pointer;transition:transform .15s;
+    box-shadow:0 6px 20px rgba(210,16,21,.25)}
+  #startBtn:active{transform:scale(.97)}
+  .hint{margin-top:14px;text-align:center;color:var(--dim);font-size:12px}
+
+  /* ---------- 答题 ---------- */
+  #quiz{padding-top:calc(env(safe-area-inset-top) + 24px)}
+  .progress-wrap{display:flex;align-items:center;gap:12px;margin-bottom:38px}
+  .bar{flex:1;height:5px;background:rgba(210,16,21,.12);border-radius:3px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:3px;transition:width .35s ease}
+  .pnum{color:var(--dim);font-size:13px;min-width:52px;text-align:right}
+  .qtext{font-size:21px;line-height:1.7;margin-bottom:34px;min-height:72px;color:var(--ink)}
+  .opt{
+    display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+    background:#fff;border:1px solid rgba(210,16,21,.14);
+    border-radius:14px;padding:17px 16px;margin-bottom:14px;
+    color:#5d564f;font-size:15.5px;line-height:1.6;cursor:pointer;
+    transition:border-color .2s,background .2s,transform .15s}
+  .opt:active{transform:scale(.98)}
+  .opt:hover{border-color:rgba(210,16,21,.45)}
+  .opt .key{
+    flex:none;width:30px;height:30px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    border:1px solid rgba(210,16,21,.25);color:var(--accent);font-size:13px;
+    transition:all .2s}
+  .opt.picked{border-color:var(--accent);background:rgba(210,16,21,.06);color:var(--ink)}
+  .opt.picked .key{background:var(--accent);border-color:var(--accent);color:#fdfbf6;font-weight:700}
+
+  /* ---------- 结果 ---------- */
+  #result{padding-top:calc(env(safe-area-inset-top) + 36px);text-align:center}
+  .r-tag{color:var(--accent);letter-spacing:6px;font-size:14px;margin-bottom:18px}
+  .r-name{font-size:40px;font-weight:800;line-height:1.3;margin-bottom:8px;color:var(--ink)}
+  .r-title{color:var(--gray);font-size:15px;margin-bottom:30px}
+  .r-line{
+    display:inline-block;background:var(--pink);border:1px solid var(--accent);
+    color:#fff;border-radius:999px;padding:10px 22px;
+    font-size:16px;font-weight:600;margin-bottom:38px}
+  .sec{text-align:left;background:#fff;border:1px solid rgba(210,16,21,.12);
+    border-radius:16px;padding:20px 18px;margin-bottom:16px}
+  .sec h3{font-size:14px;color:var(--accent);letter-spacing:2px;margin-bottom:12px}
+  .sec p{color:#5d564f;font-size:15px;line-height:1.85}
+  .traits{display:flex;flex-wrap:wrap;gap:8px}
+  .traits span{background:#fbe9de;border:1px solid rgba(210,16,21,.18);border-radius:999px;
+    padding:7px 14px;font-size:13.5px;color:#8a3c34}
+  .r-actions{display:flex;gap:12px;margin-top:26px}
+  .r-actions button{flex:1;padding:15px;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer}
+  #againBtn{background:var(--accent);border:none;color:#fdfbf6}
+  #saveTip{background:transparent;border:1px solid rgba(210,16,21,.35);color:var(--accent)}
+  .foot{margin-top:26px;color:var(--dim);font-size:11.5px;line-height:1.8}
+</style>
+</head>
+<body>
+
+<!-- 首页 -->
+<section id="home" class="page active">
+  <span class="badge">趣味人格测试</span>
+  <h1>测测你的灵魂<br>对应哪位<em>中国历史人物</em></h1>
+  <p class="sub">40 道生活化小题，没有历史考题。<br>看看穿越千年，你的灵魂最像谁。</p>
+  <div class="meta"><span><b>40</b> 道题</span><span><b>3</b> 分钟</span><span><b>7</b> 种结局</span></div>
+  <button id="startBtn">开始测试</button>
+  <p class="hint">趣味测试 · 非专业心理测评</p>
+</section>
+
+<!-- 答题 -->
+<section id="quiz" class="page">
+  <div class="progress-wrap">
+    <div class="bar"><i id="barFill"></i></div>
+    <span class="pnum" id="pnum">1/40</span>
+  </div>
+  <div id="qbox"></div>
+</section>
+
+<!-- 结果 -->
+<section id="result" class="page">
+  <p class="r-tag">你的灵魂是</p>
+  <h2 class="r-name" id="rName"></h2>
+  <p class="r-title" id="rTitle"></p>
+  <div><span class="r-line" id="rLine"></span></div>
+  <div class="sec"><h3>性格特点</h3><div class="traits" id="rTraits"></div></div>
+  <div class="sec"><h3>匹配理由</h3><p id="rWhy"></p></div>
+  <div class="sec"><h3>隐藏优势</h3><p id="rStrength"></p></div>
+  <div class="sec"><h3>趣味彩蛋</h3><p id="rEgg"></p></div>
+  <div class="r-actions">
+    <button id="againBtn">再测一次</button>
+    <button id="saveTip">截图分享</button>
+  </div>
+  <p class="foot">趣味人格测试，非历史考试，非专业心理诊断。<br>把结果发给朋友，看看谁是另一型。</p>
+</section>
+
+<script>
+const KEYS=["A","B","C","D"];
+let quiz=[],score={},idx=0;
+const $=id=>document.getElementById(id);
+
+function show(p){
+  document.querySelectorAll(".page").forEach(e=>e.classList.remove("active"));
+  $(p).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+fetch("questions.json").then(r=>r.json()).then(qs=>{quiz=qs;});
+fetch("archetypes.json").then(r=>r.json()).then(a=>{window.ARCH = a;});
+
+$("startBtn").onclick=()=>{
+  score={};idx=0;
+  renderQ();
+  show("quiz");
+};
+
+function renderQ(){
+  const q=quiz[idx];
+  $("barFill").style.width=(idx/quiz.length*100)+"%";
+  $("pnum").textContent=(idx+1)+"/"+quiz.length;
+  const box=$("qbox");
+  box.innerHTML="";
+  const qt=document.createElement("div");
+  qt.className="qtext slidein";qt.textContent=q.q;
+  box.appendChild(qt);
+  q.options.forEach((o,i)=>{
+    const b=document.createElement("button");
+    b.className="opt slidein";
+    b.style.animationDelay=(i*0.06)+"s";
+    b.innerHTML=`<span class="key">${KEYS[i]}</span><span>${o.t}</span>`;
+    b.onclick=()=>{
+      score[o.d]=(score[o.d]||0)+1;
+      [...box.querySelectorAll(".opt")].forEach(x=>x.disabled=true);
+      b.classList.add("picked");
+      setTimeout(()=>{
+        idx++;
+        if(idx<quiz.length) renderQ(); else showResult();
+      },260);
+    };
+    box.appendChild(b);
+  });
+  $("barFill").style.width=((idx)/quiz.length*100)+"%";// before answer
+  requestAnimationFrame(()=>{$("barFill").style.width=((idx+1)/quiz.length*100)+"%";});
+}
+
+function showResult(){
+  // normalize by total option count per dimension (bank may be imbalanced)
+  const totals={};
+  quiz.forEach(q=>q.options.forEach(o=>{totals[o.d]=(totals[o.d]||0)+1;}));
+  const norm=Object.entries(score).map(([k,v])=>[k,v/totals[k]]);
+  const max=Math.max(...norm.map(x=>x[1]));
+  const winners=norm.filter(([k,v])=>v===max).map(x=>x[0]);
+  const best=winners[Math.floor(Math.random()*winners.length)];
+  const r=window.ARCH.find(a=>a.archetype===best)||window.ARCH[0];
+  $("rName").textContent=r.name;
+  $("rTitle").textContent=r.title;
+  $("rLine").textContent="「"+r.line+"」";
+  $("rTraits").innerHTML=r.traits.map(t=>`<span>${t}</span>`).join("");
+  $("rWhy").textContent=r.why;
+  $("rStrength").textContent=r.strength;
+  $("rEgg").textContent=r.egg;
+  show("result");
+}
+
+$("againBtn").onclick=()=>{score={};idx=0;renderQ();show("quiz");};
+$("saveTip").onclick=()=>{
+  const t=$("saveTip");t.textContent="已截图？去分享吧 →"; 
+  setTimeout(()=>t.textContent="截图分享",1800);
+};
+</script>
+</body>
+</html>
