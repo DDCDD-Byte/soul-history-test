@@ -42,6 +42,7 @@
     letter-spacing:2px;cursor:pointer;transition:transform .15s;
     box-shadow:0 6px 20px rgba(210,16,21,.25)}
   #startBtn:active{transform:scale(.97)}
+  #startBtn:disabled{opacity:.6;cursor:wait}
   .hint{margin-top:14px;text-align:center;color:var(--dim);font-size:12px}
 
   /* ---------- 答题 ---------- */
@@ -98,7 +99,7 @@
   <h1>测测你的灵魂<br>对应哪位<em>中国历史人物</em></h1>
   <p class="sub">40 道生活化小题，没有历史考题。<br>看看穿越千年，你的灵魂最像谁。</p>
   <div class="meta"><span><b>40</b> 道题</span><span><b>3</b> 分钟</span><span><b>7</b> 种结局</span></div>
-  <button id="startBtn">开始测试</button>
+  <button id="startBtn" disabled>正在准备测试…</button>
   <p class="hint">趣味测试 · 非专业心理测评</p>
 </section>
 
@@ -130,7 +131,7 @@
 
 <script>
 const KEYS=["A","B","C","D"];
-let quiz=[],score={},idx=0;
+let quiz=[],score={},idx=0,ready=false;
 const $=id=>document.getElementById(id);
 
 function show(p){
@@ -139,10 +140,19 @@ function show(p){
   window.scrollTo(0,0);
 }
 
-fetch("questions.json").then(r=>r.json()).then(qs=>{quiz=qs;});
-fetch("archetypes.json").then(r=>r.json()).then(a=>{window.ARCH = a;});
+Promise.all([
+  fetch("questions.json").then(r=>r.json()),
+  fetch("archetypes.json").then(r=>r.json())
+]).then(([qs,a])=>{
+  quiz=qs;window.ARCH=a;ready=true;
+  $("startBtn").disabled=false;
+  $("startBtn").textContent="开始测试";
+}).catch(()=>{
+  $("startBtn").textContent="加载失败，请刷新重试";
+});
 
 $("startBtn").onclick=()=>{
+  if(!ready)return;
   score={};idx=0;
   renderQ();
   show("quiz");
